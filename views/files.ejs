@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= currentServer.name %> - Files</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div>
+      <h2>KAY HOST</h2>
+      <a href="/create-server" class="btn-create">+ New Server</a>
+      <ul class="server-list">
+        <% servers.forEach(s => { %>
+          <li class="server-item <%= s.id === currentServer.id ? 'active' : '' %>">
+            <a href="/server/<%= s.id %>"><%= s.name %></a>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+    <a href="/logout" class="btn-logout">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <h2><%= currentServer.name %></h2>
+    </div>
+
+    <div class="nav-tabs">
+      <a href="/server/<%= currentServer.id %>" class="nav-tab">Console Logs</a>
+      <a href="/server/<%= currentServer.id %>/files" class="nav-tab active">File Manager</a>
+    </div>
+
+    <div style="background: #1e293b; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+      <form action="/server/<%= currentServer.id %>/files/upload" method="POST" enctype="multipart/form-data" style="display: flex; gap: 10px;">
+        <input type="file" name="file" multiple required style="color: white;">
+        <button type="submit" class="btn btn-start">Upload Files</button>
+      </form>
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>File Name</th>
+          <th>Size</th>
+          <th>Last Modified</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% files.forEach(file => { %>
+          <tr>
+            <td><%= file.name %></td>
+            <td><%= file.size %></td>
+            <td><%= file.updated %></td>
+            <td>
+              <button class="btn btn-stop" style="padding: 5px 10px; font-size: 0.8rem;" onclick="deleteFile('<%= file.name %>')">Delete</button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function deleteFile(filename) {
+      if (!confirm(`Delete ${filename}?`)) return;
+      fetch('/server/<%= currentServer.id %>/files/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filenames: [filename] })
+      }).then(() => location.reload());
+    }
+  </script>
+</body>
+</html>

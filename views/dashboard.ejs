@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= currentServer.name %> - Console</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div>
+      <h2>KAY HOST</h2>
+      <a href="/create-server" class="btn-create">+ New Server</a>
+      <ul class="server-list">
+        <% servers.forEach(s => { %>
+          <li class="server-item <%= s.id === currentServer.id ? 'active' : '' %>">
+            <a href="/server/<%= s.id %>"><%= s.name %></a>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+    <a href="/logout" class="btn-logout">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <div>
+        <h2><%= currentServer.name %></h2>
+        <span style="color: #94a3b8; font-size: 0.9rem;">Port: <%= currentServer.port %></span>
+      </div>
+      <span id="status-badge" class="status-badge status-<%= status %>"><%= status %></span>
+    </div>
+
+    <div class="nav-tabs">
+      <a href="/server/<%= currentServer.id %>" class="nav-tab active">Console Logs</a>
+      <a href="/server/<%= currentServer.id %>/files" class="nav-tab">File Manager</a>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-start" onclick="sendAction('START')">Start</button>
+      <button class="btn btn-stop" onclick="sendAction('STOP')">Stop</button>
+      <button class="btn btn-restart" onclick="sendAction('RESTART')">Restart</button>
+    </div>
+
+    <div class="terminal" id="terminal"></div>
+  </div>
+
+  <script>
+    const serverId = "<%= currentServer.id %>";
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${location.host}`);
+    const terminal = document.getElementById("terminal");
+    const badge = document.getElementById("status-badge");
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ action: "REGISTER", serverId }));
+    };
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      if (msg.type === "history") {
+        terminal.innerHTML = "";
+        msg.logs.forEach(addLogLine);
+      }
+      if (msg.type === "log") {
+        addLogLine(msg.data);
+      }
+      if (msg.type === "status") {
+        badge.innerText = msg.status;
+        badge.className = `status-badge status-${msg.status}`;
+      }
+    };
+
+    function addLogLine(text) {
+      const line = document.createElement("div");
+      line.className = "terminal-line";
+      line.innerText = text;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function sendAction(action) {
+      ws.send(JSON.stringify({ action, serverId }));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Server - KAY HOST</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div>
+      <h2>KAY HOST</h2>
+      <a href="/create-server" class="btn-create">+ New Server</a>
+      <ul class="server-list">
+        <% servers.forEach(s => { %>
+          <li class="server-item"><a href="/server/<%= s.id %>"><%= s.name %></a></li>
+        <% }) %>
+      </ul>
+    </div>
+    <a href="/logout" class="btn-logout">Logout</a>
+  </div>
+
+  <div class="main-content">
+    <div class="form-card" style="margin: 0;">
+      <h2 style="margin-bottom: 20px; color: #38bdf8;">Create New Instance</h2>
+      <form action="/create-server" method="POST">
+        <div class="form-group">
+          <label>Server Name</label>
+          <input type="text" name="name" placeholder="My Node Bot" required>
+        </div>
+        <div class="form-group">
+          <label>Assigned Port</label>
+          <input type="number" name="assignedPort" placeholder="3000" required>
+        </div>
+        <button type="submit" class="btn btn-start">Deploy Instance</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
